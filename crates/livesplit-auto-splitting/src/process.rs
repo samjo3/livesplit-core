@@ -132,7 +132,14 @@ impl Process {
         self.refresh_memory_ranges()?;
         self.memory_ranges
             .iter()
-            .find(|m| m.filename().is_some_and(|f| f.ends_with(module)))
+            .filter(|m| m.filename().is_some_and(|f| f.ends_with(module)))
+            .map(|m| {
+                let filename = m.filename();
+                let start = m.start();
+                println!("{start:#08x}: {filename:?}");
+                m
+            })
+            .max_by_key(|m| m.size())
             .context(ModuleDoesntExist)
             .map(|m| m.start() as u64)
     }
